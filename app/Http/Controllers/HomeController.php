@@ -11,7 +11,9 @@ use App\models\Cart;
 use App\models\Order;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
+use Stripe;
 class HomeController extends Controller
 {
     public function index()
@@ -75,25 +77,31 @@ class HomeController extends Controller
 
     public function showcart(Request $request, $id)
     {
-        $count = cart::where('user_id', $id)->count();
+        $user_id=$id;
+        $count = cart::where('user_id', $user_id)->count();
         $cart_id = array_column(json_decode(order::get('cart_id'), true), 'cart_id');
-        $cartData = Cart::select(
+       $cartData = Cart::join('food', 'carts.food_id', '=', 'food.id')
+        ->join('users', 'carts.user_id', '=', 'users.id')
+        ->select(
             'carts.food_id',
             'food.title',
             'food.description',
             'food.price',
             'food.image',
             'carts.id as cart_id',
-            'carts.quantity as total_quantity'
-
-        )->join('food', 'carts.food_id', '=', 'food.id')
-            ->where('carts.user_id', $id)
-            ->whereNotIn('carts.id', $cart_id)
-            ->get();
+            DB::raw('SUM(carts.quantity) as total_quantity'),
+            DB::raw('SUM(carts.quantity * food.price) as total_amount'),
+            DB::raw('SUM(SUM(carts.quantity * food.price)) OVER () as grand_total')
+        )
+        ->where('carts.user_id', $user_id)
+        ->whereNotIn('carts.id', $cart_id)
+        ->groupBy('carts.food_id', 'food.title', 'food.description', 'food.price', 'food.image', 'carts.id')
+        ->get();
+    
         if ($cartData->isEmpty()) {
             return $this->index();
         } else {
-            return view('showcart', compact('count', 'cartData'));
+            return view('showcart', compact('user_id','count', 'cartData'));
         }
     }
 
@@ -161,4 +169,37 @@ class HomeController extends Controller
         return redirect()->route('home')->with('error', 'Payment has been cancel due to some issues!');
     }
 
+    public function stripe(Request $request)
+    {
+        $count = cart::where('user_id', $request->user_id)->count();
+        return view('stripe',['total_amount'=>$request->total_amount,'count'=>$count]);
+    }
+
+    public function stripePost(Request $request)
+    {   
+        Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        $charge=Stripe\Charge::create ([
+                "amount" => $request->total_amount * 100,
+                "currency" => "USD",
+                "source" => $request->stripeToken,
+                "description" => "Test payment." ,
+                'metadata' => ['order_id' => '1']
+        ]);
+
+        if($charge->status=='succeeded'){
+        $cartIds = json_decode($request->input('cart_id'));
+
+        foreach ($cartIds as $cartId) {        
+            $orders = new Order;
+            $orders->cart_id = $cartId;
+            $orders->user_id = $request->user_id;
+            $orders->status = 'paid';
+            $orders->save();
+        }
+        return redirect()->route('home')->with('success', 'Payment has been done successfully!');
+        }else{
+            return redirect()->route('home')->with('error', 'Payment has been failed!');
+        }
+    }
 }

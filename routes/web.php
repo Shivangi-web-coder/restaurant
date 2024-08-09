@@ -23,6 +23,8 @@ Route::get('/removecart/{id}', [HomeController::class, 'removecart']);
 Route::post('/payment', [HomeController::class, 'payment']);
 Route::get('/paypal-success', [HomeController::class, 'payPalSuccess'])->name('paypal_success');
 Route::get('/paypal-cancel', [HomeController::class, 'payPalCancel'])->name('paypal_cancel');
+Route::post('/stripe', [HomeController::class, 'stripe'])->name('stripe');
+Route::post('/stripe-post', [HomeController::class, 'stripePost'])->name('stripe.post');
 Route::get('/users', [AdminController::class, 'user']);
 Route::get('/deleteuser/{id}', [AdminController::class, 'deleteuser']);
 Route::get('/foodmenu', [AdminController::class, 'foodmenu']);
