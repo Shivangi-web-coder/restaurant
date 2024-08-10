@@ -163,46 +163,32 @@ class AdminController extends Controller
 
     public function orders()
     {
-        $orderData = Order::select(
-            'orders.id',
-            'orders.name',
-            'orders.email',
-            'orders.phone',
-            'orders.address',
-            'food.title as foodname',
-            'food.price',
-            'carts.id as cart_id',
-            'carts.quantity as total_quantity'
-
-        )->join('carts', 'carts.id', '=', 'orders.cart_id')
-            ->join('food', 'carts.food_id', '=', 'food.id')
-            ->get();
-        return view('admin.orders', compact('orderData'));
+        return view('admin.orders');
     }
 
-    public function search(Request $request)
+    public function fetch_orders(Request $request)
     {
-        $search = $request->search;
         $orderData = Order::select(
             'orders.id',
-            'orders.name',
-            'orders.email',
-            'orders.phone',
-            'orders.address',
+            'users.name',
+            'users.email',
+            'users.phone',
+            'users.address',
             'food.title as foodname',
             'food.price',
-            'carts.id as cart_id',
-            'carts.quantity as total_quantity'
+            'orders.quantity as total_quantity'
+        )->join('users','users.id','orders.user_id')
+        ->join('food', 'orders.food_id','food.id');
+        if(!empty($request->search)){
+            $orderData =$orderData->where('users.name', 'Like', '%' . $request->search . '%')
+            ->orWhere('users.email', 'Like', '%' . $request->search . '%')
+            ->orWhere('users.phone', 'Like', '%' . $request->search . '%')
+            ->orWhere('users.address', 'Like', '%' . $request->search . '%')
+            ->orWhere('food.title', 'Like', '%' . $request->search . '%')
+            ->orWhere('food.price', 'Like', '%' . $request->search . '%');
+        }
 
-        )->join('carts', 'carts.id', '=', 'orders.cart_id')
-            ->join('food', 'carts.food_id', '=', 'food.id')
-            ->where('orders.name', 'Like', '%' . $search . '%')
-            ->orWhere('orders.email', 'Like', '%' . $search . '%')
-            ->orWhere('orders.phone', 'Like', '%' . $search . '%')
-            ->orWhere('orders.address', 'Like', '%' . $search . '%')
-            ->orWhere('food.title', 'Like', '%' . $search . '%')
-            ->orWhere('food.price', 'Like', '%' . $search . '%')
-            ->get();
-        return view('admin.orders', compact('orderData'));
+        $orderData =$orderData->get()->groupBy('user_id');
+        return view('admin.order_list', compact('orderData'));
     }
 }

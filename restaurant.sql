@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 31, 2024 at 08:39 AM
+-- Generation Time: Aug 10, 2024 at 11:29 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -42,7 +42,11 @@ CREATE TABLE `carts` (
 
 INSERT INTO `carts` (`id`, `user_id`, `food_id`, `quantity`, `created_at`, `updated_at`) VALUES
 (1, '3', '2', '3', '2024-07-31 01:07:43', '2024-07-31 01:07:51'),
-(2, '3', '3', '3', '2024-07-31 01:07:58', '2024-07-31 01:07:58');
+(2, '3', '3', '3', '2024-07-31 01:07:58', '2024-07-31 01:07:58'),
+(3, '2', '2', '2', '2024-08-09 00:54:04', '2024-08-09 00:54:04'),
+(4, '2', '3', '1', '2024-08-09 00:54:09', '2024-08-09 00:54:09'),
+(6, '2', '5', '4', '2024-08-09 01:00:54', '2024-08-09 01:00:54'),
+(7, '2', '4', '1', '2024-08-10 00:51:22', '2024-08-10 00:51:22');
 
 -- --------------------------------------------------------
 
@@ -134,7 +138,7 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (8, '2024_07_27_070834_create_reservations_table', 1),
 (9, '2024_07_27_075238_create_foodchefs_table', 1),
 (10, '2024_07_27_111137_create_carts_table', 1),
-(12, '2024_07_28_142208_create_orders_table', 2);
+(11, '2024_07_28_142208_create_orders_table', 2);
 
 -- --------------------------------------------------------
 
@@ -145,10 +149,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 CREATE TABLE `orders` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `cart_id` bigint(20) UNSIGNED NOT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `email` varchar(255) DEFAULT NULL,
-  `phone` varchar(255) DEFAULT NULL,
-  `address` varchar(255) DEFAULT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `status` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -157,9 +159,11 @@ CREATE TABLE `orders` (
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`id`, `cart_id`, `name`, `email`, `phone`, `address`, `created_at`, `updated_at`) VALUES
-(1, 1, 'shivangi', 'shigigupta@gmail.com', '7867564534', 'lucknow,UP', '2024-07-31 01:08:31', '2024-07-31 01:08:31'),
-(2, 2, 'shivangi', 'shigigupta@gmail.com', '7867564534', 'lucknow,UP', '2024-07-31 01:08:31', '2024-07-31 01:08:31');
+INSERT INTO `orders` (`id`, `cart_id`, `user_id`, `status`, `created_at`, `updated_at`) VALUES
+(1, 3, 2, 'paid', '2024-08-09 08:01:58', '2024-08-09 08:01:58'),
+(2, 4, 2, 'paid', '2024-08-09 08:01:58', '2024-08-09 08:01:58'),
+(3, 6, 2, 'paid', '2024-08-09 08:01:58', '2024-08-09 08:01:58'),
+(4, 7, 2, 'paid', '2024-08-10 03:58:49', '2024-08-10 03:58:49');
 
 -- --------------------------------------------------------
 
@@ -239,7 +243,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('LEcD2weNFX0vXOKHburEzbAhOxqDRNLJpT3HMYPJ', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoielVpWDRyWmtPTFVuVmRhOGNpbEZXRkVYRlFRUEhkdkRFWWl2ZnVjUSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzI6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zaG93Y2FydC8zIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzt9', 1722407912);
+('QQoI78RdC0V8uh5l0ViImYTYzhgWbXELlhAuBm54', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiU1p2VGQyaFVjT1ZaRGpWUUpIeUpweFNheElqdEZSM21uNnI4ZElySCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjI7fQ==', 1723282130);
 
 -- --------------------------------------------------------
 
@@ -312,7 +316,8 @@ ALTER TABLE `migrations`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `orders_cart_id_foreign` (`cart_id`);
+  ADD KEY `orders_cart_id_foreign` (`cart_id`),
+  ADD KEY `orders_user_id_foreign` (`user_id`);
 
 --
 -- Indexes for table `password_resets`
@@ -357,7 +362,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `carts`
 --
 ALTER TABLE `carts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -381,13 +386,13 @@ ALTER TABLE `food_chefs`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `password_resets`
@@ -421,7 +426,8 @@ ALTER TABLE `users`
 -- Constraints for table `orders`
 --
 ALTER TABLE `orders`
-  ADD CONSTRAINT `orders_cart_id_foreign` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`);
+  ADD CONSTRAINT `orders_cart_id_foreign` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`),
+  ADD CONSTRAINT `orders_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -1,5 +1,6 @@
 @include('header')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+
 <style>
     .food_img {
         width: 100px !important;
@@ -97,41 +98,44 @@
                                         @endforeach
                                     </div>
                                 </div>
-                                <div class="col-lg-6">
-                                    <form action="{{url('payment')}}" method="post">
-                                    @csrf
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <input type="hidden" name="total_amount" id="total_amount" value="{{$grand_total}}">
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <center><input type="submit" class="order_now paypalBtn" value="Order Using PayPal">
-                                            </div>
-                                        </div>
-                                    </form>
+                                <div class="col-lg-2"></div>
+                                <div class="col-lg-4">
+                                    <center><button type="button" class="order_now paypalBtn">Order Using Paypal</button></center>
                                 </div>
-                                <div class="col-lg-6">
-                                    <form>
-                                    @csrf
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input type="button" class="order_now stripeBtn" value="Order Using Stripe"></center>
-                                            </div>
-                                        </div>
-                                    </form>
+                                <div class="col-lg-4">
+                                    <center><button type="button" class="order_now stripeBtn">Order Using Stripe</button></center>
                                 </div>
                             </div>
                         </article>
                     </section>
                 </div>
             </div>
-        
+            {{-- paypal payment gateway form --}}
             <div class="row justify-content-center">
                 <div class="col-lg-6">
-                    <i class="fa fa-times pull-right closeBtn"></i> 
+                    <i class="fa fa-times pull-right" id="paypalCloseBtn"></i> 
+                    <form class="form-horizontal" method="GET" id="paypalForm" role="form" action="{{ route('processTransaction') }}">
+                       @csrf
+                       <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label for="amount" class="form-label">Grand Total (In USD)</label>
+                                        <input type="hidden" name="cart_id" value="{{$cartId}}">
+                                        <input type="text" class="form-control" name="amount" value="{{ $grand_total }}" readonly>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                    <center><button class="btn btn-success" type="submit">Pay Now (${{ $grand_total }})</button></center>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {{-- stripe payment gateway form --}}
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <i class="fa fa-times pull-right" id="stripeCloseBtn"></i> 
                     <form 
                         id="stripeForm"
                             role="form" 
@@ -143,43 +147,37 @@
                             id="payment-form">
                         @csrf
                         <input type='hidden' name="total_amount" value="{{ $grand_total }}">
-                        <input type="hidden" name="user_id" value="{{$user_id}}">
                         <input type="hidden" name="cart_id" value="{{$cartId}}">
-                        <div class='form-row row'>
-                            <div class='col-xs-12 form-group required'>
+                        <div class='row'>
+                            <div class='col-lg-12 form-group required'>
                                 <label class='control-label'>Name on Card</label> <input
                                     class='form-control' size='4' type='text' name="card_holder">
                             </div>
-                        </div>
-
-                        <div class='form-row row'>
-                            <div class='col-xs-12 form-group card required'>
-                                <label class='control-label'>Card Number</label> <input
+                      
+                            <div class='col-lg-12 form-group card required'>
+                                <label class='form-label'>Card Number</label> <input
                                     autocomplete='off' class='form-control card-number' size='20'
                                     type='text' name="card_number">
                             </div>
-                        </div>
-
-                        <div class='form-row row'>
-                            <div class='col-xs-12 col-md-4 form-group cvc required'>
-                                <label class='control-label'>CVC</label> <input autocomplete='off'
+                            <div class='col-lg-12 form-group cvc required'>
+                                <label class='form-label'>CVC</label> <input autocomplete='off'
                                     class='form-control card-cvc' placeholder='ex. 311' size='4'
                                     type='text' name="cvc">
                             </div>
-                            <div class='col-xs-12 col-md-4 form-group expiration required'>
-                                <label class='control-label'>Expiration Month</label> <input
+                            <div class='col-lg-12 form-group expiration required'>
+                                <label class='form-label'>Expiration Month</label> <input
                                     class='form-control card-expiry-month' placeholder='MM' size='2'
                                     type='text' name="expiration_month">
                             </div>
-                            <div class='col-xs-12 col-md-4 form-group expiration required'>
-                                <label class='control-label'>Expiration Year</label> <input
+                            <div class='col-lg-12 form-group expiration required'>
+                                <label class='form-label'>Expiration Year</label> <input
                                     class='form-control card-expiry-year' placeholder='YYYY' size='4'
                                     type='text' name="expiration_year">
                             </div>
                         </div>
 
-                        <div class='form-row row'>
-                            <div class='col-md-12 error form-group hide'>
+                        <div class='row'>
+                            <div class='col-lg-12 error form-group hide'>
                                 <div class='alert-danger alert'>Please correct the errors and try
                                     again.</div>
                             </div>
@@ -190,7 +188,7 @@
                                 <button class="btn btn-success btn-block" type="submit">Pay Now (${{ $grand_total }})</button>
                             </div>
                             <div class="col-md-6">
-                                <button class="btn btn-danger btn-block resetBtn" type="button">Cancel</button>
+                                <button class="btn btn-danger btn-block resetStripeBtn" type="button">Cancel</button>
                             </div>
                         </div>
                             
@@ -202,86 +200,4 @@
 </body>
 @include('footer')
 <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
-    
-<script type="text/javascript">
-  
-$(function() {
-    $('#stripeForm').hide();
-    $('.closeBtn').hide();
-    $('.stripeBtn').click(function(){
-        $('.paypalBtn').hide();
-        $('.stripeBtn').hide();
-        $('#stripeForm').show();
-        $('.closeBtn').show();
-    });
-
-    $('.resetBtn').click(function(){
-        $('#stripeForm')[0].reset();
-    });
-
-    $('.closeBtn').click(function(){
-        $('.closeBtn').hide();
-        $('.paypalBtn').show();
-        $('.stripeBtn').show();
-        $('#stripeForm')[0].reset();
-        $('#stripeForm').hide();
-    });
-    
-    var $form = $(".require-validation");
-     
-    $('form.require-validation').bind('submit', function(e) {
-        var $form = $(".require-validation"),
-        inputSelector = ['input[type=email]', 'input[type=password]',
-                        'input[type=text]', 'input[type=file]',
-                        'textarea'].join(', '),
-        $inputs = $form.find('.required').find(inputSelector),
-        $errorMessage = $form.find('div.error'),
-        valid = true;
-        $errorMessage.addClass('hide');
-    
-        $('.has-error').removeClass('has-error');
-        $inputs.each(function(i, el) {
-          var $input = $(el);
-          if ($input.val() === '') {
-            $input.parent().addClass('has-error');
-            $errorMessage.removeClass('hide');
-            e.preventDefault();
-          }
-        });
-     
-        if (!$form.data('cc-on-file')) {
-          e.preventDefault();
-          Stripe.setPublishableKey($form.data('stripe-publishable-key'));
-          Stripe.createToken({
-            number: $('.card-number').val(),
-            cvc: $('.card-cvc').val(),
-            exp_month: $('.card-expiry-month').val(),
-            exp_year: $('.card-expiry-year').val()
-          }, stripeResponseHandler);
-        }
-    
-    });
-      
-    /*------------------------------------------
-    --------------------------------------------
-    Stripe Response Handler
-    --------------------------------------------
-    --------------------------------------------*/
-    function stripeResponseHandler(status, response) {
-        if (response.error) {
-            $('.error')
-                .removeClass('hide')
-                .find('.alert')
-                .text(response.error.message);
-        } else {
-            /* token contains id, last4, and card type */
-            var token = response['id'];
-                 
-            $form.find('input[type=text]').empty();
-            $form.append("<input type='hidden' name='stripeToken' value='" + token + "'/>");
-            $form.get(0).submit();
-        }
-    }
-     
-});
-</script>
+<script src="assets/js/payment.js"></script>

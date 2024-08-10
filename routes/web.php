@@ -20,9 +20,9 @@ Route::get('/redirects', [HomeController::class, 'redirects']);
 Route::post('/addcart/{id}', [HomeController::class, 'addcart']);
 Route::get('/showcart/{id}', [HomeController::class, 'showcart']);
 Route::get('/removecart/{id}', [HomeController::class, 'removecart']);
-Route::post('/payment', [HomeController::class, 'payment']);
-Route::get('/paypal-success', [HomeController::class, 'payPalSuccess'])->name('paypal_success');
-Route::get('/paypal-cancel', [HomeController::class, 'payPalCancel'])->name('paypal_cancel');
+Route::get('process-transaction', [HomeController::class, 'processTransaction'])->name('processTransaction');
+Route::get('success-transaction', [HomeController::class, 'successTransaction'])->name('successTransaction');
+Route::get('cancel-transaction', [HomeController::class, 'cancelTransaction'])->name('cancelTransaction');
 Route::post('/stripe', [HomeController::class, 'stripe'])->name('stripe');
 Route::post('/stripe-post', [HomeController::class, 'stripePost'])->name('stripe.post');
 Route::get('/users', [AdminController::class, 'user']);
@@ -40,7 +40,7 @@ Route::get('/deletechef/{id}', [AdminController::class, 'deletechef']);
 Route::get('/editchef/{id}', [AdminController::class, 'editchef']);
 Route::post('/updatechef', [AdminController::class, 'updatechef']);
 Route::get('/orders', [AdminController::class, 'orders']);
-Route::post('/search', [AdminController::class, 'search']);
+Route::post('/fetch_orders', [AdminController::class, 'fetch_orders']);
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
