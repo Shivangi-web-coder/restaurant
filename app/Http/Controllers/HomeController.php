@@ -11,11 +11,10 @@ use App\models\FoodChef;
 use App\models\Cart;
 use App\models\Order;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Redirect;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
-use Stripe;
+
 class HomeController extends Controller
 {
     public function index()
@@ -108,44 +107,6 @@ class HomeController extends Controller
         $data = cart::find($id);
         $data->delete();
         return redirect()->back();
-    }
-
-    public function stripe(Request $request)
-    {
-        $count = Cart::where('user_id', $request->user_id)->count();
-        return view('stripe',['total_amount'=>$request->total_amount,'count'=>$count]);
-    }
-
-    public function stripePost(Request $request)
-    { 
-        Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
-
-        $charge=Stripe\Charge::create ([
-                "amount" => $request->total_amount * 100,
-                "currency" => "USD",
-                "source" => $request->stripeToken,
-                "description" => "Test payment." ,
-                'metadata' => ['order_id' => '1']
-        ]);
-
-        if($charge->status=='succeeded'){
-        $cartIds = json_decode($request->input('cart_id'));
-        if(!empty($cartIds)){
-            foreach($cartIds as $cart) {   
-                $item=Cart::where('id', $cart)->first(); 
-                $orders = new Order;
-                $orders->food_id = $item->food_id;
-                $orders->user_id = $item->user_id;
-                $orders->quantity = $item->quantity;
-                $orders->status = 'paid';
-                $orders->save();
-            }
-            $cartRemove=Cart::whereIn('id',$cartIds)->delete();
-        }
-        return redirect()->route('home')->with('success', 'Payment has been done successfully!');
-        }else{
-            return redirect()->route('home')->with('error', 'Payment has been failed!');
-        }
     }
 
     public function processTransaction(Request $request)

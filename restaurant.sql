@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 10, 2024 at 11:29 AM
+-- Generation Time: Aug 12, 2024 at 09:28 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -42,11 +42,7 @@ CREATE TABLE `carts` (
 
 INSERT INTO `carts` (`id`, `user_id`, `food_id`, `quantity`, `created_at`, `updated_at`) VALUES
 (1, '3', '2', '3', '2024-07-31 01:07:43', '2024-07-31 01:07:51'),
-(2, '3', '3', '3', '2024-07-31 01:07:58', '2024-07-31 01:07:58'),
-(3, '2', '2', '2', '2024-08-09 00:54:04', '2024-08-09 00:54:04'),
-(4, '2', '3', '1', '2024-08-09 00:54:09', '2024-08-09 00:54:09'),
-(6, '2', '5', '4', '2024-08-09 01:00:54', '2024-08-09 01:00:54'),
-(7, '2', '4', '1', '2024-08-10 00:51:22', '2024-08-10 00:51:22');
+(2, '3', '3', '3', '2024-07-31 01:07:58', '2024-07-31 01:07:58');
 
 -- --------------------------------------------------------
 
@@ -138,7 +134,11 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (8, '2024_07_27_070834_create_reservations_table', 1),
 (9, '2024_07_27_075238_create_foodchefs_table', 1),
 (10, '2024_07_27_111137_create_carts_table', 1),
-(11, '2024_07_28_142208_create_orders_table', 2);
+(12, '2024_07_28_142208_create_orders_table', 1),
+(13, '2024_08_10_112939_add_phone_and_address_to_users_table', 2),
+(14, '2024_08_11_143640_create_plans_table', 3),
+(15, '2024_08_11_143717_create_stripe_users_table', 3),
+(16, '2024_08_11_143748_create_user_subscription_table_table', 3);
 
 -- --------------------------------------------------------
 
@@ -148,8 +148,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 
 CREATE TABLE `orders` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `cart_id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
+  `food_id` bigint(20) UNSIGNED NOT NULL,
+  `quantity` varchar(255) NOT NULL,
   `status` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -159,11 +160,11 @@ CREATE TABLE `orders` (
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`id`, `cart_id`, `user_id`, `status`, `created_at`, `updated_at`) VALUES
-(1, 3, 2, 'paid', '2024-08-09 08:01:58', '2024-08-09 08:01:58'),
-(2, 4, 2, 'paid', '2024-08-09 08:01:58', '2024-08-09 08:01:58'),
-(3, 6, 2, 'paid', '2024-08-09 08:01:58', '2024-08-09 08:01:58'),
-(4, 7, 2, 'paid', '2024-08-10 03:58:49', '2024-08-10 03:58:49');
+INSERT INTO `orders` (`id`, `user_id`, `food_id`, `quantity`, `status`, `created_at`, `updated_at`) VALUES
+(1, 2, 3, '1', 'paid', '2024-08-10 04:35:43', '2024-08-10 04:35:43'),
+(2, 2, 4, '2', 'paid', '2024-08-10 04:35:43', '2024-08-10 04:35:43'),
+(3, 2, 2, '1', 'paid', '2024-08-10 04:36:54', '2024-08-10 04:36:54'),
+(4, 2, 1, '1', 'paid', '2024-08-10 04:47:47', '2024-08-10 04:47:47');
 
 -- --------------------------------------------------------
 
@@ -195,6 +196,32 @@ CREATE TABLE `personal_access_tokens` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `plans`
+--
+
+CREATE TABLE `plans` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `uuid` varchar(255) NOT NULL,
+  `stripe_plan_id` varchar(200) DEFAULT NULL,
+  `plan_name` varchar(200) NOT NULL,
+  `plan_price` double DEFAULT NULL,
+  `plan_type` tinyint(4) NOT NULL COMMENT '1 for monthly, 2 yearly',
+  `status` tinyint(4) NOT NULL COMMENT '0 for inactive, 1 for active',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `plans`
+--
+
+INSERT INTO `plans` (`id`, `uuid`, `stripe_plan_id`, `plan_name`, `plan_price`, `plan_type`, `status`, `created_at`, `updated_at`) VALUES
+(1, '56dba066-3060-4459-b8b4-329449b14857', 'price_1PmcoTBvltxMBr80XYilI0cN', 'Gold Monthly', 10, 1, 1, '2024-08-11 09:35:47', '2024-08-11 09:35:47'),
+(2, '335a498d-caf0-4d41-b933-b5be1e5f649e', 'price_1Pmd9bBvltxMBr80UVkSpoce', 'Gold Yearly', 100, 2, 1, '2024-08-11 09:35:47', '2024-08-11 09:35:47');
 
 -- --------------------------------------------------------
 
@@ -243,7 +270,25 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('QQoI78RdC0V8uh5l0ViImYTYzhgWbXELlhAuBm54', 2, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiU1p2VGQyaFVjT1ZaRGpWUUpIeUpweFNheElqdEZSM21uNnI4ZElySCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjI7fQ==', 1723282130);
+('pzNf0BF2pZacQ5mJjJNjXPeKNzBINkCKpTE1IgJr', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidmNCck0zczRvSjBsblFUeHBHZm1MZzhXSTRvOElDV1Jwa1hxWURHaiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjQ7fQ==', 1723447688),
+('vAvberMrdEHuClNn7YWgsBM9ga1MVwOf7vroImPP', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiTnhPOG91TGR5SWM4RGJMeXRWUEdiNnZjd2wzbVJISlBzTTNvcWZFZyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6Mjg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9vcmRlcnMiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1723293601),
+('wQpMnN1FChD5uaOdbTSSYViDSdp6BWnQDkTUVDhq', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36', 'YToyOntzOjY6Il90b2tlbiI7czo0MDoiTEpla1l2V3U2dzZuZWZjNnJXOWRxajBQT1kwaTZOSUlKQkFVZkZMMiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1723386290);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stripe_users`
+--
+
+CREATE TABLE `stripe_users` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `uuid` varchar(255) NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL COMMENT 'Relation with user table',
+  `stripe_customer_id` varchar(200) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -253,8 +298,11 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 
 CREATE TABLE `users` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `uuid` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
+  `phone` varchar(255) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
   `usertype` varchar(255) NOT NULL DEFAULT '0',
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `password` varchar(255) NOT NULL,
@@ -272,10 +320,38 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `usertype`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `remember_token`, `current_team_id`, `profile_photo_path`, `created_at`, `updated_at`) VALUES
-(1, 'Admin', 'admin@gmail.com', '1', NULL, '$2y$10$TeF4r//cpfdO3oc4qmcz2ubTT4Il4lljQpZ2IYitvKqESaSKdPrEK', NULL, NULL, NULL, NULL, NULL, NULL, '2024-07-31 00:49:37', '2024-07-31 00:49:37'),
-(2, 'User', 'user@gmail.com', '0', NULL, '$2y$10$824YlHh/PASKBTEEoWwNEejBlsiAWCvGaOb7Kr8QU2akYejNsIlrS', NULL, NULL, NULL, NULL, NULL, NULL, '2024-07-31 00:50:16', '2024-07-31 00:50:16'),
-(3, 'Shivangi Gupta', 'shigigupta@gmail.com', '0', NULL, '$2y$10$1wjbfyUYH5UTr2glR4GOGeFJNya5AD7THFa12peDB5H6Yuc2mEZga', NULL, NULL, NULL, NULL, NULL, NULL, '2024-07-31 01:07:30', '2024-07-31 01:07:30');
+INSERT INTO `users` (`id`, `uuid`, `name`, `email`, `phone`, `address`, `usertype`, `email_verified_at`, `password`, `two_factor_secret`, `two_factor_recovery_codes`, `two_factor_confirmed_at`, `remember_token`, `current_team_id`, `profile_photo_path`, `created_at`, `updated_at`) VALUES
+(1, '', 'Admin', 'admin@gmail.com', '9876543213', 'lucknow', '1', NULL, '$2y$10$TeF4r//cpfdO3oc4qmcz2ubTT4Il4lljQpZ2IYitvKqESaSKdPrEK', NULL, NULL, NULL, NULL, NULL, NULL, '2024-07-31 00:49:37', '2024-07-31 00:49:37'),
+(2, '', 'User', 'user@gmail.com', '8978675645', 'pune', '0', NULL, '$2y$10$824YlHh/PASKBTEEoWwNEejBlsiAWCvGaOb7Kr8QU2akYejNsIlrS', NULL, NULL, NULL, NULL, NULL, NULL, '2024-07-31 00:50:16', '2024-07-31 00:50:16'),
+(3, '', 'Shivangi Gupta', 'shigigupta@gmail.com', NULL, NULL, '0', NULL, '$2y$10$1wjbfyUYH5UTr2glR4GOGeFJNya5AD7THFa12peDB5H6Yuc2mEZga', NULL, NULL, NULL, NULL, NULL, NULL, '2024-07-31 01:07:30', '2024-07-31 01:07:30'),
+(4, '56dba066-3060-4459-b8b4-329449b14857', 'john doe', 'johndoe@gmail.com', NULL, NULL, '0', NULL, '$2y$10$fc.X43pSe/vohCMRmRSv.uWkdGWrGuribMPNB9yowrlckuobNpizi', NULL, NULL, NULL, NULL, NULL, NULL, '2024-08-12 01:20:16', '2024-08-12 01:20:16');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_subscriptions`
+--
+
+CREATE TABLE `user_subscriptions` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `uuid` varchar(255) NOT NULL,
+  `pi_intent_id` varchar(255) DEFAULT NULL,
+  `plan_id` bigint(20) UNSIGNED NOT NULL COMMENT 'Relation with plan table',
+  `user_name` varchar(200) DEFAULT NULL,
+  `email` varchar(200) DEFAULT NULL,
+  `phone_number` varchar(200) DEFAULT NULL,
+  `current_status` varchar(255) NOT NULL DEFAULT '0' COMMENT '0 cancel,1 active',
+  `subscription_id` varchar(200) DEFAULT NULL,
+  `stripe_user_id` bigint(20) UNSIGNED NOT NULL COMMENT 'Relation with plan table',
+  `plan_amount` double DEFAULT NULL,
+  `start_date` datetime DEFAULT NULL,
+  `end_date` datetime DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `payment_type` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1 for subscription 2 for one time payment 3 for aditional payment',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Indexes for dumped tables
@@ -316,8 +392,8 @@ ALTER TABLE `migrations`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `orders_cart_id_foreign` (`cart_id`),
-  ADD KEY `orders_user_id_foreign` (`user_id`);
+  ADD KEY `orders_user_id_foreign` (`user_id`),
+  ADD KEY `orders_food_id_foreign` (`food_id`);
 
 --
 -- Indexes for table `password_resets`
@@ -334,6 +410,13 @@ ALTER TABLE `personal_access_tokens`
   ADD KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`);
 
 --
+-- Indexes for table `plans`
+--
+ALTER TABLE `plans`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `plans_uuid_unique` (`uuid`);
+
+--
 -- Indexes for table `reservations`
 --
 ALTER TABLE `reservations`
@@ -348,11 +431,28 @@ ALTER TABLE `sessions`
   ADD KEY `sessions_last_activity_index` (`last_activity`);
 
 --
+-- Indexes for table `stripe_users`
+--
+ALTER TABLE `stripe_users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `stripe_users_uuid_unique` (`uuid`),
+  ADD KEY `stripe_users_user_id_foreign` (`user_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `users_email_unique` (`email`);
+
+--
+-- Indexes for table `user_subscriptions`
+--
+ALTER TABLE `user_subscriptions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_subscriptions_uuid_unique` (`uuid`),
+  ADD KEY `user_subscriptions_plan_id_foreign` (`plan_id`),
+  ADD KEY `user_subscriptions_stripe_user_id_foreign` (`stripe_user_id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -362,7 +462,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `carts`
 --
 ALTER TABLE `carts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -386,7 +486,7 @@ ALTER TABLE `food_chefs`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `orders`
@@ -407,16 +507,34 @@ ALTER TABLE `personal_access_tokens`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `plans`
+--
+ALTER TABLE `plans`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `reservations`
 --
 ALTER TABLE `reservations`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `stripe_users`
+--
+ALTER TABLE `stripe_users`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `user_subscriptions`
+--
+ALTER TABLE `user_subscriptions`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -426,8 +544,21 @@ ALTER TABLE `users`
 -- Constraints for table `orders`
 --
 ALTER TABLE `orders`
-  ADD CONSTRAINT `orders_cart_id_foreign` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`),
+  ADD CONSTRAINT `orders_food_id_foreign` FOREIGN KEY (`food_id`) REFERENCES `food` (`id`),
   ADD CONSTRAINT `orders_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `stripe_users`
+--
+ALTER TABLE `stripe_users`
+  ADD CONSTRAINT `stripe_users_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `user_subscriptions`
+--
+ALTER TABLE `user_subscriptions`
+  ADD CONSTRAINT `user_subscriptions_plan_id_foreign` FOREIGN KEY (`plan_id`) REFERENCES `plans` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `user_subscriptions_stripe_user_id_foreign` FOREIGN KEY (`stripe_user_id`) REFERENCES `stripe_users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

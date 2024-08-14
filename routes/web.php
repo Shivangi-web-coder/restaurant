@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\StripeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,8 +24,9 @@ Route::get('/removecart/{id}', [HomeController::class, 'removecart']);
 Route::get('process-transaction', [HomeController::class, 'processTransaction'])->name('processTransaction');
 Route::get('success-transaction', [HomeController::class, 'successTransaction'])->name('successTransaction');
 Route::get('cancel-transaction', [HomeController::class, 'cancelTransaction'])->name('cancelTransaction');
-Route::post('/stripe', [HomeController::class, 'stripe'])->name('stripe');
-Route::post('/stripe-post', [HomeController::class, 'stripePost'])->name('stripe.post');
+
+Route::post('/stripe', [StripeController::class, 'stripe'])->name('stripe');
+Route::post('/stripe-post', [StripeController::class, 'stripePost'])->name('stripe.post');
 Route::get('/users', [AdminController::class, 'user']);
 Route::get('/deleteuser/{id}', [AdminController::class, 'deleteuser']);
 Route::get('/foodmenu', [AdminController::class, 'foodmenu']);
